@@ -1,12 +1,21 @@
 #!/bin/bash
 
-# Install Homebrew if not already installed
-if ! command -v brew &> /dev/null; then
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+# Detect the operating system
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  # macOS
+  echo "Detected macOS."
+  INSTALL_CMD="brew install"
+elif [[ "$OSTYPE" == "linux-gnu" || "$OSTYPE" == "linux-musl" ]]; then
+  # Linux (Assuming it's using APT, you can adapt for other package managers)
+  echo "Detected Linux."
+  INSTALL_CMD="sudo apt-get install"
+else
+  echo "Unsupported operating system: $OSTYPE"
+  exit 1
 fi
 
 # Install Neovim
-brew install neovim
+$INSTALL_CMD neovim
 
 # Create Neovim configuration directory if it doesn't exist
 mkdir -p ~/.config/nvim
@@ -78,7 +87,11 @@ map <leader>q :wqa<CR>
 EOF
 
 # Install Dependencies for YouCompleteMe and coc.nvim
-brew install python cmake node
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  brew install python cmake node
+else
+  $INSTALL_CMD python3 cmake nodejs
+fi
 
 # Install Plugins
 nvim +PlugInstall +qall
