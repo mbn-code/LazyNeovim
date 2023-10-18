@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# Define log file path
+LOG_FILE="$HOME/neovim_setup.log"
+
+# Function for logging errors
+log_error() {
+  echo "Error: $1" >> "$LOG_FILE"
+}
+
 # Detect the operating system
 if [[ "$OSTYPE" == "darwin"* ]]; then
   # macOS
@@ -10,12 +18,12 @@ elif [[ "$OSTYPE" == "linux-gnu" || "$OSTYPE" == "linux-musl" ]]; then
   echo "Detected Linux."
   INSTALL_CMD="sudo apt-get install"
 else
-  echo "Unsupported operating system: $OSTYPE"
+  log_error "Unsupported operating system: $OSTYPE"
   exit 1
 fi
 
-# Install Neovim
-$INSTALL_CMD neovim
+# Install Neovim and log errors
+$INSTALL_CMD neovim 2>> "$LOG_FILE"
 
 # Create Neovim configuration directory if it doesn't exist
 mkdir -p ~/.config/nvim
@@ -42,7 +50,7 @@ endif
 call plug#begin('~/.config/nvim/plugged')
 
 " YouCompleteMe
-Plug 'ycm-core/YouCompleteMe', { 'do': './install.py --all' }
+Plug 'ycm-core/YouCompleteMe', { 'do': './install.py --ts-completer --all --clangd' }
 
 " coc.nvim
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
@@ -88,17 +96,27 @@ EOF
 
 # Install Dependencies for YouCompleteMe and coc.nvim
 if [[ "$OSTYPE" == "darwin"* ]]; then
-  brew install python cmake node
+  brew install python cmake node 2>> "$LOG_FILE"
 else
-  $INSTALL_CMD python3 cmake nodejs
+  $INSTALL_CMD python3 cmake nodejs build-essential 2>> "$LOG_FILE"
+fi
+
+# Check for installation errors
+if [ $? -ne 0 ]; then
+  log_error "Error during dependency installation. Please check $LOG_FILE for details."
+  exit 1
 fi
 
 # Install Plugins
-nvim +PlugInstall +qall
+nvim +PlugInstall +qall 2>> "$LOG_FILE"
 
-# Install and configure Language Server Protocol (LSP) for specific languages as needed
-# Example: For Python
-# npm install -g pyright
+# Check for plugin installation errors
+if [ $? -ne 0 ]; then
+  log_error "Error during plugin installation. Please check $LOG_FILE for details."
+  exit 1
+fi
+
+# Additional configurations or language support can be added here
 
 echo "Neovim and plugins are installed and configured."
 
