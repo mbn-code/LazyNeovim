@@ -25,7 +25,23 @@ else
   exit 1
 fi
 
-# Install Neovim and log errors
+# Install essential tools
+log "Installing Git..."
+$INSTALL_CMD git 2>> "$LOG_FILE"
+
+# Install Node.js for JavaScript development
+log "Installing Node.js..."
+$INSTALL_CMD nodejs 2>> "$LOG_FILE"
+
+# Install Python development tools
+log "Installing Python development tools..."
+$INSTALL_CMD python3 python3-pip 2>> "$LOG_FILE"
+
+# Install python-psutil (you can adapt this for other packages)
+log "Installing python-psutil..."
+$INSTALL_CMD python-psutil 2>> "$LOG_FILE"
+
+# Install Neovim
 log "Installing Neovim..."
 $INSTALL_CMD neovim 2>> "$LOG_FILE"
 
@@ -33,38 +49,57 @@ $INSTALL_CMD neovim 2>> "$LOG_FILE"
 log "Creating Neovim configuration directory..."
 mkdir -p ~/.config/nvim
 
-# Create a basic Neovim configuration file
-log "Creating a basic Neovim configuration file..."
+# Create a Neovim configuration file
+log "Creating Neovim configuration file..."
 cat <<EOF > ~/.config/nvim/init.vim
 " Neovim Configuration
 " Enable line numbers
 set number
+
 " Syntax Highlighting
 syntax enable
 set background=dark
+
 " Plugin Manager (vim-plug)
 if empty(glob('~/.config/nvim/autoload/plug.vim'))
   silent !curl -fLo ~/.config/nvim/autoload/plug.vim --create-dirs
     \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
   autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
 endif
+
 " Plugins
 call plug#begin('~/.config/nvim/plugged')
+
 " YouCompleteMe
 Plug 'ycm-core/YouCompleteMe', { 'do': './install.py --ts-completer --all --clangd' }
+
 " coc.nvim
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
+
 " Lightline
 Plug 'itchyny/lightline.vim'
+
 " Gruvbox Color Scheme
 Plug 'morhetz/gruvbox'
+
 " Autopairs
 Plug 'jiangmiao/auto-pairs'
+
+" Additional language support (Example: Python)
+Plug 'python-mode/python-mode'
+Plug 'Vimjas/vim-python-pep8-indent'
+
+" File explorer (NERDTree)
+Plug 'preservim/nerdtree'
+
 call plug#end()
+
 " Configure Gruvbox Color Scheme
 colorscheme gruvbox
+
 " AutoPairs
 let g:AutoPairsFlyMode = 1
+
 " Lightline
 set laststatus=2
 let g:lightline = {
@@ -82,6 +117,11 @@ let g:lightline = {
       \   'readonly': 'error',
       \ }
       \ }
+
+" NERDTree configuration
+let g:NERDTreeWinSize = 25
+nmap <C-n> :NERDTreeToggle<CR>
+
 " Save and Quit
 map <leader>q :wqa<CR>
 EOF
@@ -89,9 +129,9 @@ EOF
 # Install Dependencies for YouCompleteMe and coc.nvim
 log "Installing dependencies for YouCompleteMe and coc.nvim..."
 if [[ "$OSTYPE" == "darwin"* ]]; then
-  $INSTALL_CMD python cmake node 2>> "$LOG_FILE"
+  $INSTALL_CMD cmake 2>> "$LOG_FILE"
 else
-  $INSTALL_CMD python3 cmake nodejs build-essential 2>> "$LOG_FILE"
+  $INSTALL_CMD build-essential cmake 2>> "$LOG_FILE"
 fi
 
 # Check for installation errors
