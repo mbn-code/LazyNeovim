@@ -37,7 +37,7 @@ This script automates the process of setting up Neovim with essential plugins an
 
 - If you encounter any issues during the setup, please check the log file `neovim_setup.log` for detailed information about errors or problems that may have occurred.
 
-## Customize
+## Customizing
 
 You can customize the script by editing it to include additional plugins, configurations, or support for different languages.
 
